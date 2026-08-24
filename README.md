@@ -64,17 +64,19 @@ ai-daily-news/
 
 配置后每天会自动把 `ai-daily/日期.md` 提交到主页仓库的 `ai-daily/` 目录，可通过 `https://你的用户名.github.io/ai-daily/` 访问。
 
-### 🆓 不用自己的 API Key（GitHub Models 免费额度）
-GitHub 提供免费模型试用额度（[GitHub Models](https://github.com/marketplace/models)），用一个 PAT 就能调用 GPT-4o-mini 等模型生成摘要和概念解释，不花一分 API 钱：
+### 🆓 不用自己的 API Key：免费 AI 方案
+> ⚠️ 注意：GitHub Models 已于 2026-07-30 退役（见 [GitHub 文档](https://docs.github.com/zh/github-models)），推理 API 不再可用，本项目已移除该回退。
 
-| Secret | 说明 |
-| --- | --- |
-| `GH_MODELS_TOKEN` | 你的 PAT（免费额度有限，足够每天一次日报） |
-| `GH_MODELS_MODEL` | 可选，默认 `gpt-4o-mini` |
+免费/低成本方案均兼容 OpenAI 接口，只需配置 3 个 Secret：
 
-AI 调用优先级：自己的 `LLM_API_KEY` > `GH_MODELS_TOKEN` > 内置词表。什么都不配也完全可以跑。
+| Secret | 智谱 BigModel（推荐，glm-4-flash 有免费档） | DeepSeek（很便宜） | OpenAI |
+| --- | --- | --- | --- |
+| `LLM_API_KEY` | 在 [open.bigmodel.cn](https://open.bigmodel.cn) 创建 | [platform.deepseek.com](https://platform.deepseek.com) 创建 | [platform.openai.com](https://platform.openai.com) 创建 |
+| `LLM_BASE_URL` | `https://open.bigmodel.cn/api/paas/v4` | `https://api.deepseek.com/v1` | `https://api.openai.com/v1` |
+| `LLM_MODEL` | `glm-4-flash` | `deepseek-chat` | `gpt-4o-mini` |
 
-## 修改触发时间
+AI 调用优先级：`LLM_API_KEY` > 内置词表。什么都不配也完全可以跑（内置词表模式）。
+## 修改触发时间## 修改触发时间
 
 编辑 `.github/workflows/ai-daily.yml` 中的 `cron`（GitHub 用 UTC 时间）：
 

@@ -21,12 +21,10 @@ jobs:
       TZ: Asia/Shanghai
       PYTHONIOENCODING: utf-8
       NEWS_TOP_N: '10'
-      # —— AI 解释（三选一：自己的 Key / GitHub Models 免费额度 / 内置词表）——
+      # —— AI 解释（配置自己的 Key；不配置则用内置词表）——
       LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
       LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
       LLM_MODEL: ${{ secrets.LLM_MODEL }}
-      GH_MODELS_TOKEN: ${{ secrets.GH_MODELS_TOKEN }}
-      GH_MODELS_MODEL: ${{ secrets.GH_MODELS_MODEL }}
       # —— 邮件通知（可选）——
       SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
       SMTP_PORT: ${{ secrets.SMTP_PORT }}
@@ -81,7 +79,7 @@ jobs:
           body: |
             今日 AI 日报已生成（${{ env.TODAY }}），详见附件。
             也可到仓库 docs/ai-daily/ 或 GitHub Pages 在线查看。
-          files: docs/ai-daily/${{ env.TODAY }}.md
+          attachments: docs/ai-daily/${{ env.TODAY }}.md
 
       - name: 同步日报到 GitHub 主页（可选：配置 HOME_REPO 后自动启用）
         if: env.HOME_REPO != '' && env.HOME_TOKEN != ''
