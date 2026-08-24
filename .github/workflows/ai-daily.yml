@@ -21,9 +21,22 @@ jobs:
       TZ: Asia/Shanghai
       PYTHONIOENCODING: utf-8
       NEWS_TOP_N: '10'
-      LLM_API_KEY: ${ { secrets.LLM_API_KEY } }
-      LLM_BASE_URL: ${ { secrets.LLM_BASE_URL } }
-      LLM_MODEL: ${ { secrets.LLM_MODEL } }
+      # —— AI 解释（三选一：自己的 Key / GitHub Models 免费额度 / 内置词表）——
+      LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+      LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+      LLM_MODEL: ${{ secrets.LLM_MODEL }}
+      GH_MODELS_TOKEN: ${{ secrets.GH_MODELS_TOKEN }}
+      GH_MODELS_MODEL: ${{ secrets.GH_MODELS_MODEL }}
+      # —— 邮件通知（可选）——
+      SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      MAIL_TO: ${{ secrets.MAIL_TO }}
+      MAIL_FROM: ${{ secrets.MAIL_FROM }}
+      # —— 同步到 GitHub 主页（可选）——
+      HOME_REPO: ${{ secrets.HOME_REPO }}
+      HOME_TOKEN: ${{ secrets.HOME_TOKEN }}
 
     steps:
       - name: 检出代码
@@ -38,7 +51,9 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: 收集 AI 新闻并生成日报
-        run: python scripts/daily_ai_news.py
+        run: |
+          echo "TODAY=$(date +%F)" >> "$GITHUB_ENV"
+          python scripts/daily_ai_news.py
 
       - name: 提交日报
         run: |
@@ -47,6 +62,39 @@ jobs:
           git add docs
           if git diff --cached --quiet; then
             echo "没有新日报，跳过提交"
+          else
+            git commit -m "📰 AI 日报 $(date +%F)"
+            git push
+          fi
+
+      - name: 发送日报邮件（可选：配置 SMTP 后自动启用）
+        if: env.SMTP_SERVER != ''
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ env.SMTP_SERVER }}
+          server_port: ${{ env.SMTP_PORT }}
+          username: ${{ env.SMTP_USERNAME }}
+          password: ${{ env.SMTP_PASSWORD }}
+          subject: 中文日报 ${{ env.TODAY }} 📰
+          to: ${{ env.MAIL_TO }}
+          from: ${{ env.MAIL_FROM }}
+          body: |
+            今日 AI 日报已生成（${{ env.TODAY }}），详见附件。
+            也可到仓库 docs/ai-daily/ 或 GitHub Pages 在线查看。
+          files: docs/ai-daily/${{ env.TODAY }}.md
+
+      - name: 同步日报到 GitHub 主页（可选：配置 HOME_REPO 后自动启用）
+        if: env.HOME_REPO != '' && env.HOME_TOKEN != ''
+        run: |
+          git clone --depth 1 "https://x-access-token:${HOME_TOKEN}@github.com/${HOME_REPO}.git" /tmp/gh-home
+          mkdir -p /tmp/gh-home/ai-daily
+          cp -f "docs/ai-daily/${TODAY}.md" /tmp/gh-home/ai-daily/
+          cd /tmp/gh-home
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "主页日报已是最新，无变化"
           else
             git commit -m "📰 AI 日报 $(date +%F)"
             git push

@@ -219,10 +219,17 @@ def collect_all():
 # ---------------- LLM 概念解释 ----------------
 
 def llm_explain(items):
-    """调用 OpenAI 兼容接口生成摘要与概念解释；失败返回 None 走回退。"""
+    """调用 OpenAI 兼容接口生成摘要与概念解释；失败返回 None 走回退。
+    优先级: 自己的 LLM_API_KEY -> GitHub Models 免费额度(GH_MODELS_TOKEN) -> 内置词表"""
     api_key = os.environ.get("LLM_API_KEY", "").strip()
     base = os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1").rstrip("/")
     model = os.environ.get("LLM_MODEL", "gpt-4o-mini")
+    gh_token = os.environ.get("GH_MODELS_TOKEN", "").strip()
+    if not api_key and gh_token:
+        # GitHub Models 免费额度（github.com/marketplace/models），PAT 作 Bearer
+        base = "https://models.github.ai/inference"
+        model = (os.environ.get("GH_MODELS_MODEL", "") or "gpt-4o-mini").strip()
+        api_key = gh_token
     if not api_key:
         return None
 

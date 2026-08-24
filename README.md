@@ -38,6 +38,42 @@ ai-daily-news/
 - 想用浏览器看（结合 GitHub Pages）：Settings → Pages → Source 选 **Deploy from a branch** → main → **/docs** → Save
   之后访问 `https://<你的用户名>.github.io/ai-daily-news/`
 
+## 可选功能（不配置自动跳过）
+
+### 📧 每天邮件推送日报
+在 Secrets 里添加以下 6 个（SMTP 授权码从邮箱服务商获取，QQ / 163 / Gmail 均支持）：
+
+| Secret | 说明 | 示例 |
+| --- | --- | --- |
+| `SMTP_SERVER` | 邮箱 SMTP 服务器 | `smtp.qq.com` / `smtp.163.com` |
+| `SMTP_PORT` | 端口 | `465` |
+| `SMTP_USERNAME` | 邮箱账号 | `xxx@qq.com` |
+| `SMTP_PASSWORD` | SMTP 授权码（不是登录密码） | `xxxx` |
+| `MAIL_TO` | 收件邮箱 | `xxx@qq.com` |
+| `MAIL_FROM` | 发件人 | `AI日报 <xxx@qq.com>` |
+
+配置后每天生成日报时会自动把 Markdown 附件发到你的邮箱。
+
+### 🏠 自动更新到你的 GitHub 主页
+想让日报同时出现在 `username.github.io` 主页仓库里，新建一个 PAT（Settings → Developer settings → Personal access tokens，勾选 `repo` 权限），然后添加：
+
+| Secret | 说明 | 示例 |
+| --- | --- | --- |
+| `HOME_REPO` | 你的主页仓库 | `你的用户名/你的用户名.github.io` |
+| `HOME_TOKEN` | PAT | `ghp_xxxx` |
+
+配置后每天会自动把 `ai-daily/日期.md` 提交到主页仓库的 `ai-daily/` 目录，可通过 `https://你的用户名.github.io/ai-daily/` 访问。
+
+### 🆓 不用自己的 API Key（GitHub Models 免费额度）
+GitHub 提供免费模型试用额度（[GitHub Models](https://github.com/marketplace/models)），用一个 PAT 就能调用 GPT-4o-mini 等模型生成摘要和概念解释，不花一分 API 钱：
+
+| Secret | 说明 |
+| --- | --- |
+| `GH_MODELS_TOKEN` | 你的 PAT（免费额度有限，足够每天一次日报） |
+| `GH_MODELS_MODEL` | 可选，默认 `gpt-4o-mini` |
+
+AI 调用优先级：自己的 `LLM_API_KEY` > `GH_MODELS_TOKEN` > 内置词表。什么都不配也完全可以跑。
+
 ## 修改触发时间
 
 编辑 `.github/workflows/ai-daily.yml` 中的 `cron`（GitHub 用 UTC 时间）：
