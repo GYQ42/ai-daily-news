@@ -191,7 +191,107 @@ Run workflow 一次，日志里 `同步日报到 GitHub 主页` 步骤应绿色 
 
 ---
 
-## 九、第七步：调整时间与频率
+## 九、第七步：GitHub 主页完全指南：创建、添加内容、实时查看
+
+### 9.1 主页的本质（先搞懂再动手）
+GitHub Pages 会把一个仓库变成免费网站：仓库名是 `用户名.github.io` 时，网站地址就是 `https://用户名.github.io`。机制很简单：
+
+- 仓库里**任何文件**（HTML / 图片 / PDF / Markdown……）提交后，GitHub 会自动重新部署，**约 1~3 分钟后**就能在网址上访问——这就是「上传即可实时看」；
+- 全免费、全球可访问、不用买服务器；
+- 免费版要求仓库是 **Public**。
+
+### 9.2 创建主页仓库
+1. GitHub 右上角 **+ → New repository**，名字填 `你的用户名.github.io`（必须与你的用户名完全一致，大小写不敏感），选 **Public**；
+2. 创建后进入仓库 **Settings → Pages**，Source 应为 **Deploy from a branch → main → / (root)**；如果显示未构建，就手动选一次并点 Save；
+3. 访问 `https://你的用户名.github.io` 验证（刚创建可能 404，等 1~3 分钟再刷新）。
+
+### 9.3 把文件传上去（三种方式任选）
+**方式 A：网页拖拽上传**（适合少量文件）
+仓库页 → **Add file → Upload files** → 把文件或文件夹直接拖进页面（支持一次多个）→ 填提交说明 → **Commit changes**。
+
+**方式 B：网页在线编辑**
+在仓库任意页面按键盘 **`.`** 键，会打开网页版 VS Code；左侧文件树可右键新建文件，编辑后 Ctrl+S，再在左侧「源代码管理」面板提交。
+
+**方式 C：git 推送**（推荐长期使用）
+```bash
+git clone https://github.com/你的用户名/你的用户名.github.io.git
+cd 你的用户名.github.io
+# 放入或修改文件后：
+git add -A
+git commit -m "update homepage"
+git push
+```
+
+### 9.4 放一个首页 index.html（可直接抄的模板）
+把下面的内容保存为 `index.html` 放到主页仓库根部并提交（把示例日期改成当天的），主页就会变成一张自带样式的日报首页：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>我的 AI 日报主页</title>
+  <style>
+    body { font-family: system-ui, "Microsoft YaHei", sans-serif; max-width: 720px;
+           margin: 48px auto; padding: 0 20px; line-height: 1.7; color: #1f2937;
+           background: linear-gradient(180deg, #eef2ff 0%, #ffffff 40%); }
+    h1 { color: #4f46e5; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px;
+            padding: 20px 24px; margin: 16px 0; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .tag { display: inline-block; background: #eef2ff; color: #4f46e5;
+           border-radius: 999px; padding: 2px 10px; font-size: 13px; margin-right: 8px; }
+    code { background: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <h1>🤖 AI 每日日报</h1>
+  <div class="card">
+    <p>每天自动收集 AI 新闻并解释概念，<b>每天早上 05:00 自动更新</b>。</p>
+    <p>日报文件在 <code>ai-daily/</code> 目录，点击下面链接直接查看：</p>
+  </div>
+  <div class="card">
+    <p><span class="tag">今日日报</span><a href="ai-daily/2026-08-24.html">2026-08-24 · 点击查看</a></p>
+    <p><span class="tag">日报归档</span><a href="ai-daily/">全部日报列表</a></p>
+  </div>
+  <footer style="color:#9ca3af;font-size:13px;margin-top:48px">
+    本页由 GitHub Pages 托管 · 内容由 GitHub Actions 自动生成
+  </footer>
+</body>
+</html>
+```
+
+> 链接后缀说明：模板里写的是 `.html`——如果主页仓库**没有** `.nojekyll` 文件，Jekyll 会把 `ai-daily/2026-08-24.md` 渲染成 `ai-daily/2026-08-24.html`；如果主页仓库放入了 `.nojekyll`（纯静态模式），`.md` 会以纯文本原样提供，链接要改成 `ai-daily/2026-08-24.md`。也可以干脆链接到 `ai-daily/` 目录页，让访客自己挑日期。
+
+### 9.5 把日报放上主页
+- **自动（推荐）**：按上一章配置好 `HOME_REPO` + `HOME_TOKEN` 两个 Secret 后，每天 Actions 会自动把 `ai-daily/日期.md` 提交到主页仓库，什么都不用管；
+- **手动**：用 9.3 的任意方式，把 ai-daily-news 仓库 `docs/ai-daily/` 里的日报文件上传到主页仓库的 `ai-daily/` 目录。
+
+### 9.6 上传其他文件实时查看（图片 / PDF / 数据）
+任意文件上传后 1~3 分钟即可用网址直接打开，路径对应关系如下：
+
+| 仓库里的文件 | 访问网址 |
+| --- | --- |
+| `index.html` | `https://你的用户名.github.io/` |
+| `ai-daily/2026-08-24.md`（无 .nojekyll，Jekyll 渲染） | `https://你的用户名.github.io/ai-daily/2026-08-24.html` |
+| `ai-daily/2026-08-24.md`（有 .nojekyll，纯文本） | `https://你的用户名.github.io/ai-daily/2026-08-24.md` |
+| `assets/照片.png` | `https://你的用户名.github.io/assets/照片.png` |
+| `docs/说明.pdf` | `https://你的用户名.github.io/docs/说明.pdf` |
+
+图片等资源也可直接嵌进网页：`<img src="assets/照片.png">`。中文文件名建议改用拼音或英文，避免个别浏览器编码兼容问题。
+
+### 9.7 常见问题
+| 现象 | 解决 |
+| --- | --- |
+| 打开首页 404 | 检查仓库名是否为 `用户名.github.io`；Settings → Pages 是否已启用；刚推送完要等 1~3 分钟；注意路径大小写 |
+| 上传了但网址打不开 | 强刷 Ctrl+F5；确认提交到了默认分支 main；等部署完成 |
+| .md 在网址上显示成纯文本 | 这是 `.nojekyll`（纯静态）模式的正常行为；要看排版好的效果，去 GitHub 仓库网页里点开该文件即可 |
+| 想更漂亮 | Settings → Pages → Theme Chooser 换官方主题，或直接改 index.html 的 CSS |
+| 想绑定自己的域名 | Settings → Pages → Custom domain 填域名，再到域名服务商加一条 CNAME 记录 |
+| 私有仓库打不开 | 免费版 GitHub Pages 只支持 Public 仓库 |
+## 十、第八步：调整时间与频率
 
 编辑仓库内 `.github/workflows/ai-daily.yml` 第 6 行的 `cron`（**GitHub 用 UTC 时间 = 北京时间 - 8 小时**）：
 
@@ -206,7 +306,7 @@ Run workflow 一次，日志里 `同步日报到 GitHub 主页` 步骤应绿色 
 
 ---
 
-## 十、日常使用：怎么查看日报
+## 十一、日常使用：怎么查看日报
 
 1. **仓库里看**：docs/ai-daily/ 目录，文件名即日期
 2. **邮件看**：每天 05:00 后查收
@@ -215,7 +315,7 @@ Run workflow 一次，日志里 `同步日报到 GitHub 主页` 步骤应绿色 
 
 ---
 
-## 十一、排查手册
+## 十二、排查手册
 
 | 症状 | 原因 | 解决 |
 | --- | --- | --- |
@@ -234,7 +334,7 @@ Run workflow 一次，日志里 `同步日报到 GitHub 主页` 步骤应绿色 
 
 ---
 
-## 十二、全部 Secrets 速查表
+## 十三、全部 Secrets 速查表
 
 | Secret 名 | 必填？ | 用途 | 示例 |
 | --- | --- | --- | --- |
@@ -254,7 +354,7 @@ Run workflow 一次，日志里 `同步日报到 GitHub 主页` 步骤应绿色 
 
 ---
 
-## 十三、进阶定制
+## 十四、进阶定制
 
 - **换新闻源**：编辑 `scripts/daily_ai_news.py` 顶部 `RSS_FEEDS` 字典，加一行 `"源名": "RSS地址"` 即可
 - **条数**：工作流里 `NEWS_TOP_N: '10'` 改成想要的数量
@@ -262,7 +362,7 @@ Run workflow 一次，日志里 `同步日报到 GitHub 主页` 步骤应绿色 
 - **加 Telegram/Discord 推送**：在工作流里邮件步骤后面加一个对应 Action 步骤
 - **自动转 HTML 网页日报**：可在主页仓库加个 Actions，把 .md 渲染成 .html（或用 GitHub Pages 自动渲染）
 
-## 十四、同类型参考项目
+## 十五、同类型参考项目
 
 - [notbrighton/ai-daily-digest](https://github.com/notbrighton/ai-daily-digest)：RSS + Markdown 存档 + GitHub Pages
 - [Yifannnnnnnnw/ai-dispatch](https://github.com/Yifannnnnnnnw/ai-dispatch)：中文每日 AI 邮件日报
